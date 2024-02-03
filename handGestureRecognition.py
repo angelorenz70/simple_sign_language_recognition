@@ -5,6 +5,18 @@ from landmark import Landmark
 # from ultralytics import YOLO
 import torch
 import pickle
+from customModel.SimpleModel import SimpleModel
+from loadpickle import LoadFileName
+
+hidden_layer = 256
+input_size = 21 * 2
+num_class = 4
+model = SimpleModel(input_size, hidden_layer, num_class)
+model_weight = torch.load("customModel/weight/best.pt")
+model.load_state_dict(model_weight)
+model.eval()
+
+classes = ["I LOVE YOU", "1", "4", "3"]
 
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
@@ -26,6 +38,13 @@ def points_sequences(hand_keypoints_landmark,xmin, ymin, width, height):
     relative_hand_keypoints = relative_hand_keypoints / wh
 
     return relative_hand_keypoints
+
+def feed_to_model(input ):
+    out = model(input)
+
+    str_class = classes[torch.argmax(out)]
+
+    return str_class
 
 label = 3
 dataset_filename = f'three_label{label}'
@@ -70,18 +89,24 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
                 centerxn,centeryn,widthn,heightn = landmark_location.get_bbox_coordinates_xywh(image.shape)
                 hand_keypoints = landmark_location.list_of_landmarks_xy
 
-                cv2.putText(image, dataset_filename, (int(xmin), int(ymin)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-
-                #generate datasets start ------------
                 datapoints = points_sequences(hand_keypoints, xminn, yminn, widthn, heightn)
-                datasets.append((datapoints, label))
-                print(f"length {len(datasets)}  datapoints size {datapoints.size()}")
-                if len(datasets) == dataset_length:
-                    with open(f"datasets/{dataset_filename}.pkl", "wb") as write:
-                        pickle.dump(datasets, write)
-                        print(f"{dataset_filename} datasets successfully saved!")
-                        exit()
+                
+                #model detection for application in real-time camera ----start
+                model_input = datapoints.unsqueeze(0)
+                output_class = feed_to_model(model_input)
+                cv2.putText(image, output_class, (int(xmin), int(ymin)), cv2.FONT_HERSHEY_SIMPLEX, 2, (144, 238, 144), 5, cv2.LINE_AA)
+                #model detection for application in real-time camera ----end
+
+
+                # #generate datasets start ------------
+                # datasets.append((datapoints, label))
+                # print(f"length {len(datasets)}  datapoints size {datapoints.size()}")
+                # if len(datasets) == dataset_length:
+                #     with open(f"datasets/{dataset_filename}.pkl", "wb") as write:
+                #         pickle.dump(datasets, write)
+                #         print(f"{dataset_filename} datasets successfully saved!")
+                #         exit()
                 #generate datasets end -----------
 
 
