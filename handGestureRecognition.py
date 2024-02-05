@@ -92,21 +92,21 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
 
                 datapoints = points_sequences(hand_keypoints, xminn, yminn, widthn, heightn)
                 
-                #model detection for application in real-time camera ----start
-                model_input = datapoints.unsqueeze(0)
-                output_class = feed_to_model(model_input)
-                cv2.putText(image, output_class, (int(xmin), int(ymin)), cv2.FONT_HERSHEY_SIMPLEX, 2, (144, 238, 144), 5, cv2.LINE_AA)
-                #model detection for application in real-time camera ----end
+                # #model detection for application in real-time camera ----start
+                # model_input = datapoints.unsqueeze(0)
+                # output_class = feed_to_model(model_input)
+                # cv2.putText(image, output_class, (int(xmin), int(ymin)), cv2.FONT_HERSHEY_SIMPLEX, 2, (144, 238, 144), 5, cv2.LINE_AA)
+                # #model detection for application in real-time camera ----end
 
 
                 # #generate datasets start ------------
-                # datasets.append((datapoints, label))
-                # print(f"length {len(datasets)}  datapoints size {datapoints.size()}")
-                # if len(datasets) == dataset_length:
-                #     with open(f"datasets/{dataset_filename}.pkl", "wb") as write:
-                #         pickle.dump(datasets, write)
-                #         print(f"{dataset_filename} datasets successfully saved!")
-                #         exit()
+                datasets.append((datapoints, label))
+                print(f"length {len(datasets)}  datapoints size {datapoints.size()}")
+                if len(datasets) == dataset_length:
+                    with open(f"datasets/{dataset_filename}.pkl", "wb") as write:
+                        pickle.dump(datasets, write)
+                        print(f"{dataset_filename} datasets successfully saved!")
+                        exit()
                 #generate datasets end -----------
 
 
